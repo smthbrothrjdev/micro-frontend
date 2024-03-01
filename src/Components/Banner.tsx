@@ -1,17 +1,25 @@
-import {useQueryClient, useQuery} from '@tanstack/react-query'
+import {useEffect, useState} from "react";
+import axios, {AxiosError} from "axios";
 
 export type bannerProps = {
   isBanner: boolean
   setBanner: () => void
 }
 export const Banner = (props: bannerProps) => {
-  const queryClient = useQueryClient()
+const [bannerMessage, setBannerMessage] = useState("Nothing")
 
-  const query = useQuery({queryKey: ['motd'], queryFn:  () =>
-        fetch('http://localhost:8080/motd').then((res)=> res.json())
-    })
+  useEffect(() => {
+    const fetchData = async ()=>{
+      try {
+        const {data: response} = await axios.get('http://localhost:8080/motd');
+        setBannerMessage(response);
+      } catch (error: any) {
+        console.error(error.message as AxiosError );
+      }
+    }
 
-
+    fetchData()
+  }, []);
   return (!props.isBanner && <div className="toast toast-top toast-center">
     <div role="alert" className="alert alert-info shadow-lg">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -21,9 +29,9 @@ export const Banner = (props: bannerProps) => {
       </svg>
       <div>
         <h3 className="font-bold">Micro-Message:</h3>
-        <div className="text-xs">{query.data}</div>
+        <div className="text-xs">{bannerMessage}</div>
       </div>
-      <button onClick={() => console.log(query)} className="btn btn-sm">OK</button>
+      <button onClick={() => console.log(bannerMessage)} className="btn btn-sm">OK</button>
     </div>
   </div>)
 }
